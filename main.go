@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"log"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type TodoItem struct {
@@ -39,4 +41,13 @@ func main() {
 		log.Fatalln(err)
 	}
 	log.Println(item2)
+	//////////////////////////////////////////////////
+	r := gin.Default()
+	v1 := r.Group("/v1")
+	{
+		items := v1.Group("/items")
+	}
+	if err := r.Run(":3000"); err != nil {
+		log.Fatalln(err)
+	}
 }
