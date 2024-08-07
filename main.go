@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"time"
+	"todolist/common"
 )
 
 type TodoItem struct {
@@ -42,18 +43,6 @@ type TodoItemUpdate struct {
 
 func (TodoItemUpdate) TableName() string {
 	return TodoItem{}.TableName()
-}
-
-type Paging struct {
-	Page  int   `json:"page" form:"page"`
-	Limit int   `json:"limit" form:"limit"`
-	Total int64 `json:"total" form:"-"`
-}
-
-func (p *Paging) Process() {
-	if p.Page < 1 {
-		p.Page = 1
-	}
 }
 
 func main() {
@@ -187,7 +176,7 @@ func DeleteItem(db *gorm.DB) func(c *gin.Context) {
 
 func ListItem(db *gorm.DB) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var paging Paging
+		var paging common.Paging
 		if err := c.ShouldBind(&paging); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": err.Error(),
