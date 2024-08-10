@@ -19,10 +19,7 @@ func ListItem(db *gorm.DB) func(c *gin.Context) {
 		}
 
 		if err := c.ShouldBind(&queryStr); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-			return
+			panic(common.ErrInvalidRequest(err))
 		}
 
 		store := storage.NewSQLStore(db)
@@ -30,10 +27,7 @@ func ListItem(db *gorm.DB) func(c *gin.Context) {
 
 		data, err := biz.ListItemBiz(c.Request.Context(), &queryStr.Filter, &queryStr.Paging)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": err.Error(),
-			})
-			return
+			panic(err)
 		}
 
 		c.JSON(http.StatusOK, common.NewSuccessResponse(data, queryStr.Paging, queryStr.Filter))

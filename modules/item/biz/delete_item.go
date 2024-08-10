@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"todolist/common"
 	"todolist/modules/item/model"
 )
 
@@ -24,11 +25,11 @@ func (biz *deleteItemBiz) DeleteItemBiz(ctx context.Context, id int) error {
 		return err
 	}
 	if data.Status == "Deleted" {
-		return model.ErrItemIsDeleted
+		return common.ErrEntityDeleted(model.EntityName, err)
 	}
 
 	if err := biz.store.DeleteItem(ctx, map[string]interface{}{"id": id}); err != nil {
-		return err
+		return common.ErrCannotDeleteEntity(model.EntityName, err)
 	}
 	return nil
 }

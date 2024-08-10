@@ -18,14 +18,14 @@ func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *c
 	}
 
 	if err := db.Table(model.TodoItem{}.TableName()).Count(&paging.Total).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDB(err)
 	}
 
 	if err := db.Offset((paging.Page - 1) * paging.Limit).
 		Limit(paging.Limit).
 		Order("id desc").
 		Find(&data).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDB(err)
 	}
 	return data, nil
 }

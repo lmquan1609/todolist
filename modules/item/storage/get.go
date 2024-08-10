@@ -2,7 +2,10 @@ package storage
 
 import (
 	"context"
+	"todolist/common"
 	"todolist/modules/item/model"
+
+	"gorm.io/gorm"
 )
 
 func (s *sqlStore) GetItemById(ctx context.Context, cond map[string]interface{}) (*model.TodoItem, error) {
@@ -10,7 +13,10 @@ func (s *sqlStore) GetItemById(ctx context.Context, cond map[string]interface{})
 	var data model.TodoItem
 
 	if err := db.Where(cond).First(&data).Error; err != nil {
-		return nil, err
+		if err == gorm.ErrRecordNotFound {
+			return nil, common.RecordNotFound
+		}
+		return nil, common.ErrDB(err)
 	}
 	return &data, nil
 }

@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"todolist/common"
 	"todolist/modules/item/model"
 )
 
@@ -20,7 +21,7 @@ func NewGetItemByIdBiz(store GetItemStorage) *getItemByIdBiz {
 func (biz *getItemByIdBiz) GetItemById(ctx context.Context, id int) (*model.TodoItem, error) {
 	data, err := biz.store.GetItemById(ctx, map[string]interface{}{"id": id})
 	if err != nil {
-		return nil, err
+		return nil, common.ErrCannotGetEntity(model.EntityName, err)
 	}
 	return data, nil
 }
