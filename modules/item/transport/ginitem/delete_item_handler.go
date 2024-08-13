@@ -18,7 +18,8 @@ func DeleteItem(db *gorm.DB) func(c *gin.Context) {
 		}
 
 		store := storage.NewSQLStore(db)
-		biz := biz.NewDeleteItemBiz(store)
+		requester := c.MustGet(common.CurrentUser).(common.Requester)
+		biz := biz.NewDeleteItemBiz(store, requester)
 
 		if err := biz.DeleteItemBiz(c.Request.Context(), id); err != nil {
 			panic(err)

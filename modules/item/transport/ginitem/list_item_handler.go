@@ -23,7 +23,8 @@ func ListItem(db *gorm.DB) func(c *gin.Context) {
 		}
 
 		store := storage.NewSQLStore(db)
-		biz := biz.NewListItemBiz(store)
+		requester := c.MustGet(common.CurrentUser).(common.Requester)
+		biz := biz.NewListItemBiz(store, requester)
 
 		data, err := biz.ListItemBiz(c.Request.Context(), &queryStr.Filter, &queryStr.Paging)
 		if err != nil {

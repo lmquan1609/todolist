@@ -18,6 +18,9 @@ func CreateItem(db *gorm.DB) func(c *gin.Context) {
 			panic(common.ErrInvalidRequest(err))
 		}
 
+		requester := c.MustGet(common.CurrentUser).(common.Requester)
+		itemData.UserId = requester.GetUserId()
+
 		store := storage.NewSQLStore(db)
 		biz := biz.NewCreateItemBiz(store)
 

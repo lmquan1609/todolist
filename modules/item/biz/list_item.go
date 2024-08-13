@@ -11,17 +11,20 @@ type ListItemStore interface {
 }
 
 type listItemBiz struct {
-	store ListItemStore
+	store     ListItemStore
+	requester common.Requester
 }
 
-func NewListItemBiz(store ListItemStore) *listItemBiz {
-	return &listItemBiz{store: store}
+func NewListItemBiz(store ListItemStore, requester common.Requester) *listItemBiz {
+	return &listItemBiz{store: store, requester: requester}
 }
 
 func (biz *listItemBiz) ListItemBiz(ctx context.Context, filter *model.Filter, paging *common.Paging) ([]model.TodoItem, error) {
 	paging.Process()
 
-	data, err := biz.store.ListItem(ctx, filter, paging)
+	ctxStore := context.WithValue(ctx, common.CurrentUser, biz.requester)
+
+	data, err := biz.store.ListItem(ctxStore, filter, paging)
 	if err != nil {
 		return nil, common.ErrCannotListEntity(model.EntityName, err)
 	}
