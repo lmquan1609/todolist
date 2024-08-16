@@ -9,3 +9,12 @@ type Requester interface {
 	GetEmail() string
 	GetRole() string
 }
+
+type DBType int
+
+const (
+	DBTypeItem DBType = 1
+	DBTypeUser DBType = 2
+)
+
+const PluginDBMain = "mysql"

@@ -6,7 +6,7 @@ import (
 	"todolist/modules/item/model"
 )
 
-func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *common.Paging) ([]model.TodoItem, error) {
+func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *common.Paging, moreKeys ...string) ([]model.TodoItem, error) {
 	db := s.db
 	var data []model.TodoItem
 
@@ -23,6 +23,10 @@ func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *c
 
 	if err := db.Table(model.TodoItem{}.TableName()).Count(&paging.Total).Error; err != nil {
 		return nil, common.ErrDB(err)
+	}
+
+	for i := range moreKeys {
+		db = db.Preload(moreKeys[i])
 	}
 
 	if err := db.Offset((paging.Page - 1) * paging.Limit).
