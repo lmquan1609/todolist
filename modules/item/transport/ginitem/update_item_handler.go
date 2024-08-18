@@ -1,6 +1,7 @@
 package ginitem
 
 import (
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -11,8 +12,9 @@ import (
 	"todolist/modules/item/storage"
 )
 
-func UpdateItem(db *gorm.DB) func(c *gin.Context) {
+func UpdateItem(serviceCtx goservice.ServiceContext) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
 			panic(common.ErrInvalidRequest(err))

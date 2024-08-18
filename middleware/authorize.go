@@ -3,11 +3,12 @@ package middleware
 import (
 	"context"
 	"fmt"
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"strings"
 	"todolist/common"
-	"todolist/component/tokenprovider"
 	usermodel "todolist/modules/user/model"
+	"todolist/plugin/tokenprovider"
 )
 
 type AuthenStore interface {
@@ -37,7 +38,7 @@ func extractTokenFromHeaderString(s string) (string, error) {
 // 2. Validate token and parse to payload
 // 3. From the token payload, we use user_id to find from DB
 
-func RequiredAuth(authStore AuthenStore, tokenProvider tokenprovider.Provider) func(c *gin.Context) {
+func RequiredAuth(authStore AuthenStore, serviceCtx goservice.ServiceContext) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		token, err := extractTokenFromHeaderString(c.GetHeader("Authorization"))
 
@@ -45,9 +46,14 @@ func RequiredAuth(authStore AuthenStore, tokenProvider tokenprovider.Provider) f
 			panic(err)
 		}
 
-		payload, err := tokenProvider.Validate(token)
-		user, err := authStore.FindUser(c.Request.Context(), map[string]interface{}{"id": payload.UserId})
+		tokenProvider := serviceCtx.MustGet(common.PluginJWT).(tokenprovider.Provider)
 
+		payload, err := tokenProvider.Validate(token)
+		if err != nil {
+			panic(err)
+		}
+
+		user, err := authStore.FindUser(c.Request.Context(), map[string]interface{}{"id": payload.UserId})
 		if err != nil {
 			panic(err)
 		}

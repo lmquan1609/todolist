@@ -1,6 +1,7 @@
 package ginitem
 
 import (
+	goservice "github.com/200Lab-Education/go-sdk"
 	"net/http"
 	"todolist/common"
 	"todolist/modules/item/biz"
@@ -11,8 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func ListItem(db *gorm.DB) func(c *gin.Context) {
+func ListItem(serviceCtx goservice.ServiceContext) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		var queryStr struct {
 			common.Paging
 			model.Filter

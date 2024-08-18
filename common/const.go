@@ -17,4 +17,7 @@ const (
 	DBTypeUser DBType = 2
 )
 
-const PluginDBMain = "mysql"
+const (
+	PluginDBMain = "mysql"
+	PluginJWT    = "jwt"
+)

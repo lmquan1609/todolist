@@ -3,8 +3,8 @@ package userbiz
 import (
 	"context"
 	"todolist/common"
-	"todolist/component/tokenprovider"
 	usermodel "todolist/modules/user/model"
+	"todolist/plugin/tokenprovider"
 )
 
 type LoginStorage interface {

@@ -1,6 +1,7 @@
 package ginuser
 
 import (
+	goservice "github.com/200Lab-Education/go-sdk"
 	"net/http"
 	"todolist/common"
 	userbiz "todolist/modules/user/biz"
@@ -11,8 +12,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func Register(db *gorm.DB) func(c *gin.Context) {
+func Register(serviceCtx goservice.ServiceContext) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		var data usermodel.UserCreate
 
 		if err := c.ShouldBind(&data); err != nil {
