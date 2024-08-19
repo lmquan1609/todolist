@@ -13,6 +13,7 @@ import (
 	"todolist/modules/upload"
 	userstorage "todolist/modules/user/storage"
 	ginuser "todolist/modules/user/transport/gin"
+	ginuserlikeitem "todolist/modules/userlikeitem/transport/gin"
 	"todolist/plugin/sdkgorm"
 	"todolist/plugin/tokenprovider/jwt"
 )
@@ -56,6 +57,10 @@ var rootCmd = &cobra.Command{
 					items.PATCH("/:id", middlewareAuth, ginitem.UpdateItem(service))
 					items.DELETE("/:id", middlewareAuth, ginitem.DeleteItem(service))
 					items.GET("", middlewareAuth, ginitem.ListItem(service))
+
+					items.POST("/:id/like", middlewareAuth, ginuserlikeitem.LikeItem(service))
+					items.DELETE("/:id/unlike", middlewareAuth, ginuserlikeitem.UnlikeItem(service))
+					items.GET("/:id/liked-users", ginuserlikeitem.ListUserLiked(service))
 				}
 				v1.PUT("/upload", upload.Upload(db))
 
