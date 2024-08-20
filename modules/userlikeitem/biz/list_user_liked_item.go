@@ -24,9 +24,5 @@ func (biz *listUserLikeItemBiz) ListUserLikedItem(ctx context.Context, itemId in
 		return nil, common.ErrCannotListEntity(userlikeitemmodel.EntityName, err)
 	}
 
-	if err != nil {
-		return nil, common.ErrCannotListEntity(userlikeitemmodel.EntityName, err)
-	}
-
 	return result, nil
 }

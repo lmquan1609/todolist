@@ -30,6 +30,8 @@ func (s *sqlStore) ListUsers(ctx context.Context, itemId int, paging *common.Pag
 
 	for i := range data {
 		result[i] = *data[i].User
+		result[i].UpdatedAt = nil
+		result[i].CreatedAt = data[i].CreatedAt
 	}
 	return result, nil
 }
