@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"todolist/common"
+	"todolist/modules/item/storage"
 	userlikeitembiz "todolist/modules/userlikeitem/biz"
 	userlikeitemstorage "todolist/modules/userlikeitem/storage"
 )
@@ -22,7 +23,8 @@ func UnlikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 
 		store := userlikeitemstorage.NewSQLStore(db)
-		biz := userlikeitembiz.NewUserUnlikeItemBiz(store)
+		itemStore := storage.NewSQLStore(db)
+		biz := userlikeitembiz.NewUserUnlikeItemBiz(store, itemStore)
 
 		if err := biz.UnlikeItem(c.Request.Context(), requester.GetUserId(), int(id.GetLocalID())); err != nil {
 			panic(err)

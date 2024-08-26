@@ -6,7 +6,9 @@ import (
 	"todolist/common"
 	"todolist/modules/item/biz"
 	"todolist/modules/item/model"
+	"todolist/modules/item/repository"
 	"todolist/modules/item/storage"
+	userlikeitemstorage "todolist/modules/userlikeitem/storage"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -26,7 +28,9 @@ func ListItem(serviceCtx goservice.ServiceContext) func(c *gin.Context) {
 
 		store := storage.NewSQLStore(db)
 		requester := c.MustGet(common.CurrentUser).(common.Requester)
-		biz := biz.NewListItemBiz(store, requester)
+		likeStore := userlikeitemstorage.NewSQLStore(db)
+		repo := repository.NewListItemRepo(store, likeStore, requester)
+		biz := biz.NewListItemBiz(repo, requester)
 
 		data, err := biz.ListItemBiz(c.Request.Context(), &queryStr.Filter, &queryStr.Paging)
 		if err != nil {
@@ -35,6 +39,9 @@ func ListItem(serviceCtx goservice.ServiceContext) func(c *gin.Context) {
 
 		for i := range data {
 			data[i].Mask()
+			if i == len(data)-1 {
+				queryStr.Paging.NextCursor = data[len(data)-1].FakeId.String()
+			}
 		}
 
 		c.JSON(http.StatusOK, common.NewSuccessResponse(data, queryStr.Paging, queryStr.Filter))

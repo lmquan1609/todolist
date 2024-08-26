@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"todolist/common"
+	"todolist/modules/item/storage"
 	userlikeitembiz "todolist/modules/userlikeitem/biz"
 	userlikeitemmodel "todolist/modules/userlikeitem/model"
 	userlikeitemstorage "todolist/modules/userlikeitem/storage"
@@ -23,7 +24,8 @@ func LikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 
 		store := userlikeitemstorage.NewSQLStore(db)
-		biz := userlikeitembiz.NewUserLikeItemBiz(store)
+		itemStore := storage.NewSQLStore(db)
+		biz := userlikeitembiz.NewUserLikeItemBiz(store, itemStore)
 
 		if err := biz.LikeItem(c.Request.Context(), &userlikeitemmodel.Like{
 			ItemId: int(id.GetLocalID()),

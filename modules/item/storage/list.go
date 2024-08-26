@@ -29,8 +29,19 @@ func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *c
 		db = db.Preload(moreKeys[i])
 	}
 
-	if err := db.Offset((paging.Page - 1) * paging.Limit).
-		Limit(paging.Limit).
+	if v := paging.FakeCursor; v != "" {
+		uid, err := common.FromBase58(v)
+
+		if err != nil {
+			return nil, common.ErrDB(err)
+		}
+
+		db = db.Where("id < ?", uid.GetLocalID())
+	} else {
+		db = db.Offset((paging.Page - 1) * paging.Limit)
+	}
+
+	if err := db.Limit(paging.Limit).
 		Order("id desc").
 		Find(&data).Error; err != nil {
 		return nil, common.ErrDB(err)

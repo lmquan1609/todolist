@@ -1,7 +1,9 @@
 package ginuserlikeitem
 
 import (
+	"fmt"
 	goservice "github.com/200Lab-Education/go-sdk"
+	"github.com/btcsuite/btcutil/base58"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -9,6 +11,8 @@ import (
 	userlikeitembiz "todolist/modules/userlikeitem/biz"
 	userlikeitemstorage "todolist/modules/userlikeitem/storage"
 )
+
+const timeLayout = "2006-01-02T15:04:05.999999"
 
 func ListUserLiked(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -39,6 +43,10 @@ func ListUserLiked(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 
 		for i := range result {
 			result[i].Mask()
+			if i == len(result)-1 {
+				cursorStr := base58.Encode([]byte(fmt.Sprintf("%v", result[i].CreatedAt.Format(timeLayout))))
+				queryStr.Paging.NextCursor = cursorStr
+			}
 		}
 		c.JSON(http.StatusOK, common.NewSuccessResponse(result, queryStr.Paging, nil))
 	}
