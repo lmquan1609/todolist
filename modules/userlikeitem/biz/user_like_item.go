@@ -3,6 +3,7 @@ package userlikeitembiz
 import (
 	"context"
 	"log"
+	"todolist/common/asyncjob"
 	userlikeitemmodel "todolist/modules/userlikeitem/model"
 )
 
@@ -28,11 +29,22 @@ func (biz *userLikeItemBiz) LikeItem(ctx context.Context, data *userlikeitemmode
 		return userlikeitemmodel.ErrCannnotLikeItem(err)
 	}
 
-	go func() {
+	// go func() {
+	// 	if err := biz.itemStore.IncreaseLikeCount(ctx, data.ItemId); err != nil {
+	// 		log.Println(err)
+	// 	}
+	// }()
+
+	job := asyncjob.NewJob(func(ctx context.Context) error {
 		if err := biz.itemStore.IncreaseLikeCount(ctx, data.ItemId); err != nil {
-			log.Println(err)
+			return err
 		}
-	}()
+		return nil
+	})
+
+	if err := asyncjob.NewGroup(true, job).Run(ctx); err != nil {
+		log.Println(err)
+	}
 
 	return nil
 }
