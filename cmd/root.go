@@ -16,6 +16,8 @@ import (
 	ginuserlikeitem "todolist/modules/userlikeitem/transport/gin"
 	"todolist/plugin/sdkgorm"
 	"todolist/plugin/tokenprovider/jwt"
+	"todolist/pubsub"
+	"todolist/subscriber"
 )
 
 func newService() goservice.Service {
@@ -24,6 +26,7 @@ func newService() goservice.Service {
 		goservice.WithVersion("1.0.0"),
 		goservice.WithInitRunnable(sdkgorm.NewGormDB("main", common.PluginDBMain)),
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
+		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubsub)),
 	)
 	return service
 }
@@ -69,6 +72,8 @@ var rootCmd = &cobra.Command{
 				v1.GET("/profile", middlewareAuth, ginuser.Profile())
 			}
 		})
+
+		_ = subscriber.NewEngine(service).Start()
 		if err := service.Start(); err != nil {
 			serviceLogger.Fatalln(err)
 		}

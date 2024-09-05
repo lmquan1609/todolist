@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"todolist/common"
-	"todolist/modules/item/storage"
 	userlikeitembiz "todolist/modules/userlikeitem/biz"
 	userlikeitemmodel "todolist/modules/userlikeitem/model"
 	userlikeitemstorage "todolist/modules/userlikeitem/storage"
+	"todolist/pubsub"
 )
 
 func LikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
@@ -22,10 +22,11 @@ func LikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 
 		requester := c.MustGet(common.CurrentUser).(common.Requester)
 		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
+		ps := serviceCtx.MustGet(common.PluginPubsub).(pubsub.PubSub)
 
 		store := userlikeitemstorage.NewSQLStore(db)
-		itemStore := storage.NewSQLStore(db)
-		biz := userlikeitembiz.NewUserLikeItemBiz(store, itemStore)
+		// itemStore := storage.NewSQLStore(db)
+		biz := userlikeitembiz.NewUserLikeItemBiz(store, ps)
 
 		if err := biz.LikeItem(c.Request.Context(), &userlikeitemmodel.Like{
 			ItemId: int(id.GetLocalID()),

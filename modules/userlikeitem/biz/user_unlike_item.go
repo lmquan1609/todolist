@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 	"todolist/common"
-	"todolist/common/asyncjob"
 	userlikeitemmodel "todolist/modules/userlikeitem/model"
+	"todolist/pubsub"
 )
 
 type UserUnlikeItemStorage interface {
@@ -13,17 +13,18 @@ type UserUnlikeItemStorage interface {
 	Delete(ctx context.Context, userId, itemId int) error
 }
 
-type DecreaseItemStorage interface {
-	DecreaseLikeCount(ctx context.Context, id int) error
-}
+// type DecreaseItemStorage interface {
+// 	DecreaseLikeCount(ctx context.Context, id int) error
+// }
 
 type userUnlikeItemBiz struct {
-	store     UserUnlikeItemStorage
-	itemStore DecreaseItemStorage
+	store UserUnlikeItemStorage
+	// itemStore DecreaseItemStorage
+	ps pubsub.PubSub
 }
 
-func NewUserUnlikeItemBiz(store UserUnlikeItemStorage, itemStore DecreaseItemStorage) *userUnlikeItemBiz {
-	return &userUnlikeItemBiz{store: store, itemStore: itemStore}
+func NewUserUnlikeItemBiz(store UserUnlikeItemStorage, ps pubsub.PubSub) *userUnlikeItemBiz {
+	return &userUnlikeItemBiz{store: store, ps: ps}
 }
 
 func (biz *userUnlikeItemBiz) UnlikeItem(ctx context.Context, userId, itemId int) error {
@@ -47,14 +48,18 @@ func (biz *userUnlikeItemBiz) UnlikeItem(ctx context.Context, userId, itemId int
 	// 	}
 	// }()
 
-	job := asyncjob.NewJob(func(ctx context.Context) error {
-		if err := biz.itemStore.DecreaseLikeCount(ctx, itemId); err != nil {
-			return err
-		}
-		return nil
-	})
+	// job := asyncjob.NewJob(func(ctx context.Context) error {
+	// 	if err := biz.itemStore.DecreaseLikeCount(ctx, itemId); err != nil {
+	// 		return err
+	// 	}
+	// 	return nil
+	// })
 
-	if err := asyncjob.NewGroup(true, job).Run(ctx); err != nil {
+	// if err := asyncjob.NewGroup(true, job).Run(ctx); err != nil {
+	// 	log.Println(err)
+	// }
+
+	if err := biz.ps.Publish(ctx, common.TopicUserUnlikedItem, pubsub.NewMessage(&userlikeitemmodel.Like{UserId: userId, ItemId: itemId})); err != nil {
 		log.Println(err)
 	}
 

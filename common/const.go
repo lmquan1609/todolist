@@ -20,4 +20,8 @@ const (
 const (
 	PluginDBMain = "mysql"
 	PluginJWT    = "jwt"
+	PluginPubsub = "pubsub"
+
+	TopicUserLikedItem   = "TopicUserLikedItem"
+	TopicUserUnlikedItem = "TopicUserUnlikedItem"
 )

@@ -84,3 +84,34 @@ func (ps *localPubSub) run() error {
 	}()
 	return nil
 }
+
+func (ps *localPubSub) GetPrefix() string {
+	return ps.name
+}
+
+func (ps *localPubSub) Get() interface{} {
+	return ps
+}
+
+func (ps *localPubSub) Name() string {
+	return ps.name
+}
+
+func (ps *localPubSub) InitFlags() {
+}
+
+func (ps *localPubSub) Configure() error {
+	return nil
+}
+
+func (ps *localPubSub) Run() error {
+	return ps.run()
+}
+
+func (ps *localPubSub) Stop() <-chan bool {
+	c := make(chan bool)
+	go func() {
+		c <- true
+	}()
+	return c
+}
