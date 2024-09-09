@@ -14,6 +14,7 @@ import (
 	userstorage "todolist/modules/user/storage"
 	ginuser "todolist/modules/user/transport/gin"
 	ginuserlikeitem "todolist/modules/userlikeitem/transport/gin"
+	"todolist/plugin/rpccaller"
 	"todolist/plugin/sdkgorm"
 	"todolist/plugin/tokenprovider/jwt"
 	"todolist/pubsub"
@@ -27,6 +28,7 @@ func newService() goservice.Service {
 		goservice.WithInitRunnable(sdkgorm.NewGormDB("main", common.PluginDBMain)),
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
 		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubsub)),
+		goservice.WithInitRunnable(rpccaller.NewAPIItemCaller(common.PluginItemAPI)),
 	)
 	return service
 }
@@ -70,6 +72,11 @@ var rootCmd = &cobra.Command{
 				v1.POST("/register", ginuser.Register(service))
 				v1.POST("/login", ginuser.Login(service))
 				v1.GET("/profile", middlewareAuth, ginuser.Profile())
+
+				rpc := v1.Group("rpc")
+				{
+					rpc.POST("/get_item_likes", ginuserlikeitem.GetItemLikes(service))
+				}
 			}
 		})
 
