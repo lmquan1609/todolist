@@ -8,6 +8,7 @@ import (
 	logger2 "gorm.io/gorm/logger"
 	"strings"
 	"sync"
+	"time"
 	"todolist/plugin/sdkgorm/gormdialects"
 )
 
@@ -116,7 +117,14 @@ func (gdb *gormDB) Get() interface{} {
 	if gdb.logger.GetLevel() == "debug" || gdb.logger.GetLevel() == "trace" {
 		return gdb.db.Session(&gorm.Session{NewDB: true}).Debug()
 	}
-	return gdb.db.Session(&gorm.Session{NewDB: true, Logger: gdb.db.Logger.LogMode(logger2.Silent)})
+
+	newSessionDB := gdb.db.Session(&gorm.Session{NewDB: true, Logger: gdb.db.Logger.LogMode(logger2.Silent)})
+	if db, err := newSessionDB.DB(); err != nil {
+		db.SetMaxOpenConns(100)
+		db.SetMaxIdleConns(100)
+		db.SetConnMaxLifetime(time.Hour)
+	}
+	return newSessionDB
 }
 
 func getDBType(dbType string) GormDBType {

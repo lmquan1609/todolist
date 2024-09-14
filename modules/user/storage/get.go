@@ -2,12 +2,16 @@ package userstorage
 
 import (
 	"context"
+	"go.opencensus.io/trace"
 	"gorm.io/gorm"
 	"todolist/common"
 	usermodel "todolist/modules/user/model"
 )
 
 func (s *sqlStore) FindUser(ctx context.Context, conds map[string]interface{}, moreInfo ...string) (*usermodel.User, error) {
+	_, span := trace.StartSpan(ctx, "user.storage.find")
+	defer span.End()
+
 	db := s.db
 	for i := range moreInfo {
 		db = db.Preload(moreInfo[i])

@@ -5,15 +5,20 @@ import (
 	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
+	"go.opencensus.io/exporter/jaeger"
+	"go.opencensus.io/trace"
 	"gorm.io/gorm"
+	"log"
 	"os"
 	"todolist/common"
+	"todolist/memcache"
 	"todolist/middleware"
 	"todolist/modules/item/transport/ginitem"
 	"todolist/modules/upload"
 	userstorage "todolist/modules/user/storage"
 	ginuser "todolist/modules/user/transport/gin"
 	ginuserlikeitem "todolist/modules/userlikeitem/transport/gin"
+	"todolist/plugin/appredis"
 	"todolist/plugin/rpccaller"
 	"todolist/plugin/sdkgorm"
 	"todolist/plugin/tokenprovider/jwt"
@@ -29,6 +34,7 @@ func newService() goservice.Service {
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
 		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubsub)),
 		goservice.WithInitRunnable(rpccaller.NewAPIItemCaller(common.PluginItemAPI)),
+		goservice.WithInitRunnable(appredis.NewRedisDB("redis", common.PluginRedis)),
 	)
 	return service
 }
@@ -51,7 +57,10 @@ var rootCmd = &cobra.Command{
 			db := service.MustGet(common.PluginDBMain).(*gorm.DB)
 
 			authStore := userstorage.NewSQLStore(db)
-			middlewareAuth := middleware.RequiredAuth(authStore, service)
+			authCache := memcache.NewUserCaching(memcache.NewRedisCache(service), authStore)
+
+			// middlewareAuth := middleware.RequiredAuth(authStore, service)
+			middlewareAuth := middleware.RequiredAuth(authCache, service)
 
 			v1 := e.Group("/v1")
 			{
@@ -79,6 +88,18 @@ var rootCmd = &cobra.Command{
 				}
 			}
 		})
+
+		je, err := jaeger.NewExporter(jaeger.Options{
+			AgentEndpoint: os.Getenv("JAEGER_ENDPOINT"),
+			Process:       jaeger.Process{ServiceName: "todolist"},
+		})
+
+		if err != nil {
+			log.Println(err)
+		}
+
+		trace.RegisterExporter(je)
+		trace.ApplyConfig(trace.Config{DefaultSampler: trace.ProbabilitySampler(1)})
 
 		_ = subscriber.NewEngine(service).Start()
 		if err := service.Start(); err != nil {

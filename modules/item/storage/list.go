@@ -2,11 +2,15 @@ package storage
 
 import (
 	"context"
+	"go.opencensus.io/trace"
 	"todolist/common"
 	"todolist/modules/item/model"
 )
 
 func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *common.Paging, moreKeys ...string) ([]model.TodoItem, error) {
+	_, span := trace.StartSpan(ctx, "item.storage.list")
+	defer span.End()
+
 	db := s.db
 	var data []model.TodoItem
 

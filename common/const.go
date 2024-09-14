@@ -22,6 +22,7 @@ const (
 	PluginJWT     = "jwt"
 	PluginPubsub  = "pubsub"
 	PluginItemAPI = "item-api"
+	PluginRedis   = "redis"
 
 	TopicUserLikedItem   = "TopicUserLikedItem"
 	TopicUserUnlikedItem = "TopicUserUnlikedItem"
