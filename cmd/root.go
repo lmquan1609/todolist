@@ -19,10 +19,10 @@ import (
 	ginuser "todolist/modules/user/transport/gin"
 	ginuserlikeitem "todolist/modules/userlikeitem/transport/gin"
 	"todolist/plugin/appredis"
+	"todolist/plugin/nats"
 	"todolist/plugin/rpccaller"
 	"todolist/plugin/sdkgorm"
 	"todolist/plugin/tokenprovider/jwt"
-	"todolist/pubsub"
 	"todolist/subscriber"
 )
 
@@ -32,7 +32,8 @@ func newService() goservice.Service {
 		goservice.WithVersion("1.0.0"),
 		goservice.WithInitRunnable(sdkgorm.NewGormDB("main", common.PluginDBMain)),
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
-		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubsub)),
+		// goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubsub)),
+		goservice.WithInitRunnable(nats.NewNATS(common.PluginPubsub)),
 		goservice.WithInitRunnable(rpccaller.NewAPIItemCaller(common.PluginItemAPI)),
 		goservice.WithInitRunnable(appredis.NewRedisDB("redis", common.PluginRedis)),
 	)
